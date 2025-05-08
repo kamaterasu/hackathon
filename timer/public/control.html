@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>⚙️ Timer Control</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 400px;
+      margin: 2em auto;
+    }
+
+    input,
+    button {
+      font-size: 1rem;
+      padding: 0.5em;
+      margin: 0.2em;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Timer Control</h1>
+
+  <label>
+    Set Time (MM:SS):
+    <input id="setTime" type="text" value="05:00" placeholder="MM:SS" />
+  </label>
+  <button id="btnSet">Set</button>
+  <br />
+
+  <button id="btnStart">Start</button>
+  <button id="btnPause">Pause</button>
+  <button id="btnReset">Reset</button>
+
+  <h2>Current Time: <span id="currentTime">00:00</span></h2>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const display = document.getElementById('currentTime');
+
+    socket.on('time', sec => {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      display.textContent =
+        String(m).padStart(2, '0') +
+        ':' +
+        String(s).padStart(2, '0');
+    });
+
+    document.getElementById('btnSet').onclick = () => {
+      const parts = document.getElementById('setTime').value.split(':');
+      const m = parseInt(parts[0], 10) || 0;
+      const s = parseInt(parts[1], 10) || 0;
+      const total = m * 60 + s;
+      fetch('/api/set', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({time: total})
+      });
+    };
+
+    document.getElementById('btnStart').onclick = () =>
+      fetch('/api/start', {method: 'POST'});
+    document.getElementById('btnPause').onclick = () =>
+      fetch('/api/pause', {method: 'POST'});
+    document.getElementById('btnReset').onclick = () =>
+      fetch('/api/reset', {method: 'POST'});
+  </script>
+</body>
+
+</html>

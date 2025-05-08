@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📤 File Upload</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 480px;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+      font-size: 1.75rem;
+      color: #333;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.75rem;
+      color: #555;
+      font-weight: 500;
+    }
+
+    select,
+    input[type="file"] {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      margin-top: 0.25rem;
+    }
+
+    button {
+      width: 100%;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #msg {
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    #msg.error {
+      color: #d9534f;
+    }
+
+    #msg.success {
+      color: #28a745;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Upload PPT/PDF</h1>
+    <label for="nameSelect">Choose Team Name</label>
+    <select id="nameSelect">
+      <option disabled>Loading...</option>
+    </select>
+
+    <label for="fileInput">Select File</label>
+    <input id="fileInput" type="file" accept=".pdf,.ppt,.pptx" />
+
+    <button id="btnUpload">Upload</button>
+    <div id="msg"></div>
+  </div>
+
+  <script>
+    async function loadNames() {
+      const res = await fetch('/api/names');
+      const list = await res.json();
+      const sel = document.getElementById('nameSelect');
+      sel.innerHTML = '';
+      if (list.length === 0) {
+        sel.innerHTML = '<option disabled>No names available</option>';
+      } else {
+        list.forEach(item => {
+          const opt = document.createElement('option');
+          opt.value = item.name;
+          opt.textContent = item.name;
+          sel.appendChild(opt);
+        });
+      }
+    }
+
+    document.getElementById('btnUpload').onclick = async () => {
+      const sel = document.getElementById('nameSelect');
+      const file = document.getElementById('fileInput').files[0];
+      const msg = document.getElementById('msg');
+      msg.textContent = '';
+      msg.className = '';
+
+      if (!sel.value || !file) {
+        msg.textContent = 'Please select a name and file.';
+        msg.classList.add('error');
+        return;
+      }
+      const form = new FormData();
+      form.append('name', sel.value);
+      form.append('file', file);
+
+      const res = await fetch('/api/upload', {method: 'POST', body: form});
+      if (res.ok) {
+        msg.textContent = 'File uploaded successfully!';
+        msg.classList.add('success');
+        document.getElementById('fileInput').value = '';
+      } else {
+        const err = await res.json();
+        msg.textContent = err.error || 'Upload failed';
+        msg.classList.add('error');
+      }
+      loadNames();
+    };
+
+    window.addEventListener('DOMContentLoaded', loadNames);
+  </script>
+
+</body>
+
+</html>

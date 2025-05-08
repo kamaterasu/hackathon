@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚙️ Manage Names</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.75rem;
+      color: #333;
+      text-align: center;
+    }
+
+    .add-name {
+      display: flex;
+      margin-bottom: 1.5rem;
+    }
+
+    .add-name input {
+      flex: 1;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 4px 0 0 4px;
+      font-size: 1rem;
+    }
+
+    .add-name button {
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .add-name button:hover {
+      background-color: #218838;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      padding: 0.75rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    li:nth-child(even) {
+      background: #fafafa;
+    }
+
+    .status {
+      font-size: 0.9rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .uploaded {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .pending {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    li a {
+      margin-right: 1rem;
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    li a:hover {
+      text-decoration: underline;
+    }
+
+    li button {
+      background: #dc3545;
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    li button:hover {
+      background: #c82333;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Names & Status</h1>
+    <div class="add-name">
+      <input id="newName" type="text" placeholder="Enter new name" />
+      <button id="btnAdd">Add</button>
+    </div>
+    <ul id="namesList"></ul>
+  </div>
+
+  <script>
+    async function loadList() {
+      const res = await fetch('/api/names');
+      const list = await res.json();
+      const ul = document.getElementById('namesList');
+      ul.innerHTML = '';
+      list.forEach(item => {
+        const li = document.createElement('li');
+        const spanName = document.createElement('span');
+        spanName.textContent = item.name;
+        li.appendChild(spanName);
+
+        const badge = document.createElement('span');
+        badge.className = 'status ' + (item.uploaded ? 'uploaded' : 'pending');
+        badge.textContent = item.uploaded ? 'Uploaded' : 'No File';
+        li.appendChild(badge);
+
+        if (item.uploaded) {
+          const a = document.createElement('a');
+          a.href = item.fileUrl;
+          a.target = '_blank';
+          a.textContent = 'View';
+          li.appendChild(a);
+        } else {
+          const placeholder = document.createElement('div');
+          placeholder.style.width = '48px';
+          li.appendChild(placeholder);
+        }
+
+        const del = document.createElement('button');
+        del.textContent = 'Delete';
+        del.onclick = async () => {
+          await fetch(`/api/names/${encodeURIComponent(item.name)}`, {method: 'DELETE'});
+          loadList();
+        };
+        li.appendChild(del);
+
+        ul.appendChild(li);
+      });
+    }
+
+    document.getElementById('btnAdd').onclick = async () => {
+      const inp = document.getElementById('newName');
+      const name = inp.value.trim();
+      if (!name) return;
+      const res = await fetch('/api/names', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name})
+      });
+      if (res.ok) {
+        inp.value = '';
+        loadList();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Error adding name');
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', loadList);
+  </script>
+</body>
+
+</html>
