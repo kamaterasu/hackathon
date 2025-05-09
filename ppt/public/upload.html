@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📤 File Upload</title>
+  <title>📤 PPT Upload</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     * {
@@ -188,7 +188,7 @@
       const sel = document.getElementById('nameSelect');
       sel.innerHTML = '';
       if (list.length === 0) {
-        sel.innerHTML = '<option disabled>No names available</option>';
+        sel.innerHTML = '<option disabled>No teams available</option>';
       } else {
         list.forEach(item => {
           const opt = document.createElement('option');
@@ -207,7 +207,7 @@
       msg.className = '';
 
       if (!sel.value || !file) {
-        msg.textContent = '⚠️ Please select a team name and a file.';
+        msg.textContent = '⚠️ Багийн нэр болон file-аа оруулна уу.';
         msg.classList.add('error');
         return;
       }
