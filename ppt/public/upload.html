@@ -14,67 +14,142 @@
     body {
       margin: 0;
       font-family: 'Roboto', sans-serif;
-      background-color: #f4f6f8;
+      background: linear-gradient(to bottom, #71deff 0%, white 50%, #83e396 100%);
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      padding-top: 2rem;
+      color: #333;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem 1rem 1rem;
+    }
+
+    header img {
+      max-height: 200px;
+      margin-bottom: 0.5rem;
+      transition: transform 0.3s ease;
+    }
+
+    header img:hover {
+      transform: scale(1.05) rotate(1deg);
     }
 
     .container {
-      background: #ffffff;
+      background: #fff;
       padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
       width: 100%;
-      max-width: 480px;
+      margin-top: 5rem;
+      max-width: 520px;
+      margin-bottom: 3rem;
+      transition: all 0.3s ease-in-out;
+      position: relative;
+      overflow: hidden;
     }
 
-    h1 {
-      margin-bottom: 1rem;
-      font-size: 1.75rem;
-      color: #333;
+    .container::before {
+      content: "";
+      position: absolute;
+      top: -40%;
+      left: -30%;
+      width: 160%;
+      height: 200%;
+      background: radial-gradient(circle at center, rgba(255, 235, 255, 0.15), transparent 70%);
+      transform: rotate(15deg);
+      z-index: 0;
+    }
+
+    .container:hover {
+      transform: scale(1.01);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    h2 {
+      margin-bottom: 1.2rem;
+      font-size: 1.8rem;
+      color: #4a148c;
       text-align: center;
+      position: relative;
+      z-index: 1;
     }
 
     label {
       display: block;
-      margin-bottom: 0.75rem;
+      margin-top: 1.2rem;
       color: #555;
       font-weight: 500;
+      font-size: 1rem;
+      position: relative;
+      z-index: 1;
     }
 
     select,
     input[type="file"] {
       width: 100%;
-      padding: 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      padding: 0.65rem;
+      margin-top: 0.4rem;
       font-size: 1rem;
-      margin-top: 0.25rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      background-color: #f9f9ff;
+      position: relative;
+      z-index: 1;
+    }
+
+    select:focus,
+    input[type="file"]:focus {
+      border-color: #2575fc;
+      box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.2);
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.03);
+      }
     }
 
     button {
       width: 100%;
-      background-color: #007bff;
-      color: #fff;
+      background: linear-gradient(to right, #71deff, #83e396);
+      color: white;
       border: none;
-      padding: 0.75rem;
+      padding: 0.8rem;
       font-size: 1rem;
-      border-radius: 4px;
+      font-weight: 500;
+      border-radius: 8px;
       cursor: pointer;
-      margin-top: 1rem;
-      transition: background-color 0.2s ease;
+      margin-top: 1.5rem;
+      transition: background 0.3s ease, transform 0.2s ease;
+      animation: pulse 2.5s infinite;
+      z-index: 1;
+      position: relative;
     }
 
     button:hover {
-      background-color: #0056b3;
+      background: linear-gradient(to right, #83e396, #71deff);
+      transform: scale(1.02);
     }
 
     #msg {
       margin-top: 1rem;
       text-align: center;
       font-weight: 500;
+      font-size: 0.95rem;
+      position: relative;
+      z-index: 1;
     }
 
     #msg.error {
@@ -88,17 +163,21 @@
 </head>
 
 <body>
+  <header>
+    <img src="assets/headerlogo.png" alt="Sys&Cotech Logo">
+  </header>
+
   <div class="container">
-    <h1>Upload PPT/PDF</h1>
-    <label for="nameSelect">Choose Team Name</label>
+    <h2>PPT-ээ оруулна уу.</h2>
+    <label for="nameSelect">Багийн нэр</label>
     <select id="nameSelect">
       <option disabled>Loading...</option>
     </select>
 
-    <label for="fileInput">Select File</label>
+    <label for="fileInput">Зөвхөн pdf, .ppt or .pptx file оруулна уу!</label>
     <input id="fileInput" type="file" accept=".pdf,.ppt,.pptx" />
 
-    <button id="btnUpload">Upload</button>
+    <button id="btnUpload">🚀 Upload</button>
     <div id="msg"></div>
   </div>
 
@@ -128,30 +207,31 @@
       msg.className = '';
 
       if (!sel.value || !file) {
-        msg.textContent = 'Please select a name and file.';
+        msg.textContent = '⚠️ Please select a team name and a file.';
         msg.classList.add('error');
         return;
       }
+
       const form = new FormData();
       form.append('name', sel.value);
       form.append('file', file);
 
-      const res = await fetch('/api/upload', {method: 'POST', body: form});
+      const res = await fetch('/api/upload', { method: 'POST', body: form });
       if (res.ok) {
-        msg.textContent = 'File uploaded successfully!';
+        msg.textContent = '✅ File uploaded successfully!';
         msg.classList.add('success');
         document.getElementById('fileInput').value = '';
       } else {
         const err = await res.json();
-        msg.textContent = err.error || 'Upload failed';
+        msg.textContent = `❌ ${err.error || 'Upload failed'}`;
         msg.classList.add('error');
       }
+
       loadNames();
     };
 
     window.addEventListener('DOMContentLoaded', loadNames);
   </script>
-
 </body>
 
 </html>
